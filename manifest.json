@@ -1,0 +1,8 @@
+{
+  "name": "Riverside Speech & Debate Pickleball Fundraiser",
+  "short_name": "RSD Pickleball",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#1d5c46"
+}
