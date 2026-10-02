@@ -1,10 +1,14 @@
 # Riverside Speech & Debate — Pickleball Fundraiser Signup
 
-A prototype signup site with two paths — **Tournament Bracket** and **Open Play** — plus a "Who's In" roster view. Right now signups are saved in each visitor's own browser (localStorage) so you can click through the whole thing. Before the real event, swap in one of the backend options below so every visitor's signup lands in one shared place.
+A signup site with three parts — **Tournament Bracket**, **Open Play**, and a live **Up Next** board — plus a "Who's In" roster view.
+
+**Tournament registration and payment happen entirely in BoosterHub**, not on this site — the Tournament tab just links to the $30/player BoosterHub product. That's deliberate: last year's event had people sign up without ever actually paying, so this year the bracket is built directly from BoosterHub's own payment records (see step 3 below), which makes an unpaid entry impossible to end up in it.
+
+Open Play is still a form on this site. Out of the box (before you wire up the backend), Open Play signups save in each visitor's own browser (localStorage) so you can click through the whole thing locally. Once you deploy the backend in step 3, every Open Play signup lands in one shared Google Sheet, and the Up Next tab goes live with real courts, an automated bracket, and honor-system result reporting.
 
 ## 1. Try it now
 
-Open `index.html` in a browser (double-click it, or drag it into a browser window). Fill out both forms, then check the "Who's In" tab.
+Open `index.html` in a browser (double-click it, or drag it into a browser window). Fill out the Open Play form, then check the "Who's In" tab. (The Tournament tab's "Register & Pay" button won't go anywhere until the BoosterHub product link is added — see step 3.)
 
 ## 2. Deploy it on GitHub Pages (free, ~10 minutes)
 
@@ -17,17 +21,17 @@ Open `index.html` in a browser (double-click it, or drag it into a browser windo
 
 That's genuinely the easy part. GitHub Pages only serves static files, though — it can't run a server to store form submissions. That's what the next section is for.
 
-## 3. Making signups actually shared (pick one)
+## 3. Making signups actually shared, and turning on the live Up Next board
 
-Right now `app.js` has a single function, `submitToBackend()`, that's the one place to change. Three options, easiest first:
+This runs on a free **Google Sheet + Apps Script** backend, already built (`backend/Code.gs`). It gives you:
 
-**Formspree (simplest, free tier)** — Sign up at formspree.io, create a form, and it gives you an endpoint URL. Replace `submitToBackend()` with a `fetch()` POST to that URL (there's a commented example already in the code). Every submission shows up in the Formspree dashboard and can email you. No database, no code beyond that one function.
+- A live spreadsheet of every open-play signup, no database needed.
+- A **Up Next** tab on the page showing which teams are on which court right now, and who's on deck.
+- A **payment-verified, semi-automated bracket**: the organizer pastes a BoosterHub payment export into a sheet tab, the page turns it into suggested teams (reviewable/editable before anything's locked in), and only confirmed teams become the bracket — so an unpaid signup can never make it in. See "Tournament entries: BoosterHub, not this form" in the setup guide for the full loop.
+- A fully automated single-elimination bracket once teams are confirmed: matches advance themselves as results come in.
+- Honor-system result reporting — whoever's at the court taps "[Team] won" on their phone, no login needed.
 
-**Google Sheet + Apps Script** — Slightly more setup, but you get a live spreadsheet of signups you can sort/filter, and it's free. Create a Sheet, add a small Apps Script "web app" that appends a row on each POST, and point `submitToBackend()` at that script's URL. I can build this out with you if you want it — just say the word.
-
-**Airtable / a small database** — Overkill for a one-day fundraiser, but worth it if you go the "pickup games site" route below, since you'll want real accounts and search eventually.
-
-For a single fundraiser, Formspree is the right amount of effort.
+Full click-by-click setup, including the BoosterHub product (the $30/player entry fee + "Partner name" add-on) and the payment-review workflow, is in **[`backend/SETUP_BACKEND.md`](backend/SETUP_BACKEND.md)** — about 10–15 minutes for the Sheet/Apps Script part, no coding required on your end. Once it's deployed, the two things to set in this project are the `BACKEND_URL` and `BOOSTERHUB_STORE_URL` constants at the top of `app.js`.
 
 ## 4. Do you need to put this in the App Store?
 
@@ -47,7 +51,9 @@ None of that is out of reach, but I'd treat it as its own project once the fundr
 
 ## Files
 
-- `index.html` — the page markup and both forms
+- `index.html` — the page markup: the BoosterHub registration link, the Open Play form, the roster view, and the Up Next board
 - `styles.css` — all styling
-- `app.js` — tab switching, form handling, roster rendering, and the one function to replace for a real backend
+- `app.js` — tab switching, the BoosterHub link, Open Play form handling, roster rendering, Up Next polling/rendering, and the admin payment-review/generate/reset-bracket controls. `BACKEND_URL` and `BOOSTERHUB_STORE_URL` at the top are the two lines to set once things are deployed.
 - `manifest.json` — lets phones add this to the home screen like an app
+- `backend/Code.gs` — the Google Apps Script backend (open-play signups, reading the BoosterHub payments export into team suggestions, bracket generation, match reporting, live state)
+- `backend/SETUP_BACKEND.md` — step-by-step deployment guide for the backend, including the BoosterHub product and payment-review workflow
