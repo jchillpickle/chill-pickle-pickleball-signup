@@ -30,6 +30,20 @@ body {
   padding: 0 20px;
 }
 
+/* Hero banner (mascot graphic) */
+.hero-banner {
+  background: var(--green-900);
+  display: flex;
+  justify-content: center;
+}
+
+.hero-banner img {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+}
+
 /* Header */
 .site-header {
   background: linear-gradient(160deg, var(--green-700), var(--green-900));
@@ -572,6 +586,98 @@ p.empty, .court-grid .empty { color: var(--ink-soft); font-style: italic; }
   .review-row { grid-template-columns: 1fr; }
   .review-and { display: none; }
 }
+
+/* Tournament bracket view */
+.bracket-wrap {
+  overflow-x: auto;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bracket-rounds {
+  display: flex;
+  gap: 32px;
+  align-items: stretch;
+  min-width: max-content;
+  padding: 4px 2px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  width: 210px;
+  flex-shrink: 0;
+}
+
+.bracket-round-title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--green-700);
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.bracket-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 20px;
+  flex: 1;
+}
+
+.bracket-match {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.bracket-match.placeholder {
+  box-shadow: none;
+  border-style: dashed;
+  opacity: 0.65;
+}
+
+.bracket-team {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bracket-team:nth-of-type(2) { border-bottom: none; }
+
+.bracket-team.winner {
+  background: var(--green-100);
+  color: var(--green-900);
+}
+
+.bracket-team.tbd {
+  color: var(--ink-soft);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.bracket-status {
+  display: block;
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 6px;
+}
+
+.bracket-status.live { background: #e0453c; color: var(--white); }
+.bracket-status.done { background: var(--green-100); color: var(--green-700); }
+.bracket-status.bye,
+.bracket-status.pending { background: var(--bg); color: var(--ink-soft); }
 
 /* Footer */
 .site-footer {

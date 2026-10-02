@@ -28,10 +28,12 @@ This runs on a free **Google Sheet + Apps Script** backend, already built (`back
 - A live spreadsheet of every open-play signup, no database needed.
 - A **Up Next** tab on the page showing which teams are on which court right now, and who's on deck.
 - A **payment-verified, semi-automated bracket**: the organizer pastes a BoosterHub payment export into a sheet tab, the page turns it into suggested teams (reviewable/editable before anything's locked in), and only confirmed teams become the bracket — so an unpaid signup can never make it in. See "Tournament entries: BoosterHub, not this form" in the setup guide for the full loop.
+- **Skill-based pairing and seeding**: solo registrants (anyone who writes "needs a partner" instead of a real partner name) get auto-paired with another solo player of a similar skill level instead of being matched arbitrarily, and the bracket itself is seeded by skill rather than randomly shuffled, so e.g. two Advanced teams can't land opposite each other in round 1. See "Skill-based pairing & seeding" in the setup guide.
 - A fully automated single-elimination bracket once teams are confirmed: matches advance themselves as results come in.
+- A **live bracket view**: once the organizer generates the bracket, the Tournament tab swaps itself from the registration page to a full bracket tree — every round, "TBD" placeholders for matchups that haven't been decided yet, and the winner highlighted as results come in. No separate step needed to see it; it updates on its own.
 - Honor-system result reporting — whoever's at the court taps "[Team] won" on their phone, no login needed.
 
-Full click-by-click setup, including the BoosterHub product (the $30/player entry fee + "Partner name" add-on) and the payment-review workflow, is in **[`backend/SETUP_BACKEND.md`](backend/SETUP_BACKEND.md)** — about 10–15 minutes for the Sheet/Apps Script part, no coding required on your end. Once it's deployed, the two things to set in this project are the `BACKEND_URL` and `BOOSTERHUB_STORE_URL` constants at the top of `app.js`.
+Full click-by-click setup, including the BoosterHub product (the $30/player entry fee + "Player's Name" / "Partner name" / "Skill Level" add-ons) and the payment-review workflow, is in **[`backend/SETUP_BACKEND.md`](backend/SETUP_BACKEND.md)** — about 10–15 minutes for the Sheet/Apps Script part, no coding required on your end. Once it's deployed, the two things to set in this project are the `BACKEND_URL` and `BOOSTERHUB_STORE_URL` constants at the top of `app.js`.
 
 ## 4. Do you need to put this in the App Store?
 
@@ -51,9 +53,10 @@ None of that is out of reach, but I'd treat it as its own project once the fundr
 
 ## Files
 
-- `index.html` — the page markup: the BoosterHub registration link, the Open Play form, the roster view, and the Up Next board
+- `index.html` — the page markup: the BoosterHub registration link, the live bracket view, the Open Play form, the roster view, and the Up Next board
 - `styles.css` — all styling
-- `app.js` — tab switching, the BoosterHub link, Open Play form handling, roster rendering, Up Next polling/rendering, and the admin payment-review/generate/reset-bracket controls. `BACKEND_URL` and `BOOSTERHUB_STORE_URL` at the top are the two lines to set once things are deployed.
+- `app.js` — tab switching, the BoosterHub link, Open Play form handling, roster rendering, the live tournament bracket view, Up Next polling/rendering, and the admin payment-review/generate/reset-bracket controls. `BACKEND_URL` and `BOOSTERHUB_STORE_URL` at the top are the two lines to set once things are deployed.
 - `manifest.json` — lets phones add this to the home screen like an app
-- `backend/Code.gs` — the Google Apps Script backend (open-play signups, reading the BoosterHub payments export into team suggestions, bracket generation, match reporting, live state)
-- `backend/SETUP_BACKEND.md` — step-by-step deployment guide for the backend, including the BoosterHub product and payment-review workflow
+- `backend/Code.gs` — the Google Apps Script backend (open-play signups, reading the BoosterHub payments export into team suggestions, skill-based pairing, skill-seeded bracket generation, match reporting, live state)
+- `backend/SETUP_BACKEND.md` — step-by-step deployment guide for the backend, including the BoosterHub product, the payment-review workflow, and skill-based pairing/seeding
+- `backend/boosterhub-live-capture.html` — the optional script pasted into BoosterHub's Webmaster → Scripts field to auto-capture payments the moment they happen, instead of waiting for a CSV export

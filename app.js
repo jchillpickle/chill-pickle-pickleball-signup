@@ -260,12 +260,14 @@ function reportMatchWinner(round, slot, side, btnEl) {
 function pollState() {
   if (!BACKEND_URL) {
     showOnly(upnextOffline);
+    renderTournamentBracket(null);
     return;
   }
   backendGet("getState")
     .then((state) => {
       if (!state.ok && state.ok !== undefined) throw new Error(state.error || "backend error");
       renderUpNext(state);
+      renderTournamentBracket(state);
     })
     .catch((err) => {
       console.error("pollState failed", err);
@@ -279,13 +281,121 @@ function startPolling() {
   pollTimer = setInterval(pollState, 20000);
 }
 
-// Start polling once the visitor looks at the Up Next tab (no point
-// hammering the backend before anyone's watching it).
-document.querySelector('[data-tab="upnext"]').addEventListener("click", startPolling);
+// Poll right away (not just once someone clicks "Up Next") so the Tournament
+// tab — the default landing tab — can swap itself over to the live bracket
+// the moment the organizer generates it, without anyone needing to go look
+// for it on a different tab first.
+startPolling();
 
 // If the backend isn't configured yet, show the offline notice immediately
-// so the tab isn't blank if someone clicks it before startPolling fires.
-if (!BACKEND_URL) showOnly(upnextOffline);
+// so neither tab is blank if someone looks before startPolling's first
+// response comes back.
+if (!BACKEND_URL) { showOnly(upnextOffline); renderTournamentBracket(null); }
+
+/* =====================================================================
+   TOURNAMENT BRACKET VIEW
+   Replaces the registration content on the Tournament tab once the
+   organizer generates the bracket (state.bracketGenerated). Renders every
+   round as its own column, left (round 1) to right (final), with "TBD"
+   placeholders for later-round matchups that don't exist yet because the
+   teams that'll play them haven't been decided — mirrors a normal printed
+   bracket instead of just "now playing / on deck".
+   ===================================================================== */
+
+const tournamentRegister = document.getElementById("tournamentRegister");
+const tournamentBracket = document.getElementById("tournamentBracket");
+const bracketRounds = document.getElementById("bracketRounds");
+const bracketChampion = document.getElementById("bracketChampion");
+const bracketChampionName = document.getElementById("bracketChampionName");
+const bracketLiveDot = document.getElementById("bracketLiveDot");
+
+function roundName(roundNum, totalRounds, bracketSize) {
+  const fromEnd = totalRounds - roundNum + 1; // 1 = final, 2 = semis, 3 = quarters...
+  if (fromEnd === 1) return "Final";
+  if (fromEnd === 2) return "Semifinals";
+  if (fromEnd === 3) return "Quarterfinals";
+  const teamsInRound = bracketSize / Math.pow(2, roundNum - 1);
+  return "Round of " + teamsInRound;
+}
+
+function renderBracketMatch(m) {
+  const resolved = m.status === "done" || m.status === "bye";
+  const aWon = resolved && m.winner && m.winner === m.teamA;
+  const bWon = resolved && m.winner && m.teamB && m.winner === m.teamB;
+  const teamALabel = m.teamALabel || "TBD";
+  const teamBLabel = m.teamB ? (m.teamBLabel || "TBD") : (m.status === "bye" ? "— bye —" : "TBD");
+  const statusTag =
+    m.status === "active" ? `<span class="bracket-status live">Court ${escapeHtml(String(m.court))}</span>`
+    : m.status === "done" ? `<span class="bracket-status done">Final</span>`
+    : m.status === "bye" ? `<span class="bracket-status bye">Bye</span>`
+    : `<span class="bracket-status pending">Waiting</span>`;
+  return `<div class="bracket-match">
+      <div class="bracket-team${aWon ? " winner" : ""}">${escapeHtml(teamALabel)}</div>
+      <div class="bracket-team${bWon ? " winner" : ""}">${escapeHtml(teamBLabel)}</div>
+      ${statusTag}
+    </div>`;
+}
+
+function renderBracketPlaceholder() {
+  return `<div class="bracket-match placeholder">
+      <div class="bracket-team tbd">TBD</div>
+      <div class="bracket-team tbd">TBD</div>
+      <span class="bracket-status pending">Waiting</span>
+    </div>`;
+}
+
+function renderTournamentBracket(state) {
+  if (!tournamentBracket || !tournamentRegister) return;
+
+  if (!state || !state.bracketGenerated) {
+    tournamentBracket.hidden = true;
+    tournamentRegister.hidden = false;
+    return;
+  }
+
+  tournamentRegister.hidden = true;
+  tournamentBracket.hidden = false;
+  if (bracketLiveDot) bracketLiveDot.hidden = !!state.champion;
+
+  if (state.champion) {
+    bracketChampionName.textContent = state.championLabel || state.champion;
+    bracketChampion.hidden = false;
+  } else {
+    bracketChampion.hidden = true;
+  }
+
+  const matches = state.allMatches || [];
+  const round1 = matches.filter((m) => m.round === 1);
+  const bracketSize = round1.length * 2;
+
+  if (!bracketSize) {
+    bracketRounds.innerHTML = `<p class="empty">Bracket is generating…</p>`;
+    return;
+  }
+
+  const totalRounds = Math.round(Math.log2(bracketSize));
+  const byRound = {};
+  matches.forEach((m) => {
+    (byRound[m.round] = byRound[m.round] || []).push(m);
+  });
+
+  let html = "";
+  for (let r = 1; r <= totalRounds; r++) {
+    const slotsInRound = bracketSize / Math.pow(2, r);
+    const existingBySlot = {};
+    (byRound[r] || []).forEach((m) => { existingBySlot[m.slot] = m; });
+    let roundHtml = "";
+    for (let slot = 0; slot < slotsInRound; slot++) {
+      const m = existingBySlot[slot];
+      roundHtml += m ? renderBracketMatch(m) : renderBracketPlaceholder();
+    }
+    html += `<div class="bracket-round">
+        <h3 class="bracket-round-title">${escapeHtml(roundName(r, totalRounds, bracketSize))}</h3>
+        <div class="bracket-matches">${roundHtml}</div>
+      </div>`;
+  }
+  bracketRounds.innerHTML = html;
+}
 
 /* -------------------- Admin: generate / reset bracket ------------------- */
 

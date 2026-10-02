@@ -10,6 +10,10 @@
 </head>
 <body>
 
+<div class="hero-banner">
+  <img src="assets/mascot-banner.jpg" alt="2nd Annual Pickleball Fundraiser — Saturday, October 31st, 10am-4pm, 226 Oakland Ave, Greer, SC 29650" />
+</div>
+
 <header class="site-header">
   <div class="wrap">
     <p class="eyebrow">Riverside Speech &amp; Debate Booster Club</p>
@@ -37,16 +41,36 @@
 
   <!-- TOURNAMENT PANEL -->
   <section class="panel active" id="panel-tournament">
-    <div class="panel-copy">
-      <h2>Doubles Tournament</h2>
-      <p>Bracket-style doubles play. Entry fee goes straight to the team's fundraising goal.</p>
+    <div id="tournamentRegister">
+      <div class="panel-copy">
+        <h2>Doubles Tournament</h2>
+        <p>Bracket-style doubles play. Entry fee goes straight to the team's fundraising goal.</p>
+      </div>
+
+      <div class="boosterhub-register">
+        <h3>Register &amp; pay — $30 per player</h3>
+        <p>Tournament registration and payment both happen through BoosterHub. When you register you'll be asked for your <strong>partner's name</strong> — if you don't have one yet, enter "needs a partner" and we'll pair you up by skill level before the bracket is set.</p>
+        <a id="boosterhubLink" class="btn-primary" href="#" target="_blank" rel="noopener">Register &amp; Pay on BoosterHub — $30</a>
+        <p class="form-note">You'll get a confirmation from BoosterHub once payment goes through. Only confirmed, paid registrations make it into the bracket — if you register but the payment doesn't go through, you won't be entered.</p>
+      </div>
     </div>
 
-    <div class="boosterhub-register">
-      <h3>Register &amp; pay — $30 per player</h3>
-      <p>Tournament registration and payment both happen through BoosterHub. When you register you'll be asked for your <strong>partner's name</strong> — if you don't have one yet, enter "needs a partner" and we'll pair you up before the bracket is set.</p>
-      <a id="boosterhubLink" class="btn-primary" href="#" target="_blank" rel="noopener">Register &amp; Pay on BoosterHub — $30</a>
-      <p class="form-note">You'll get a confirmation from BoosterHub once payment goes through. Only confirmed, paid registrations make it into the bracket — if you register but the payment doesn't go through, you won't be entered.</p>
+    <!-- Live bracket view — replaces the registration content above once the
+         organizer generates the bracket. Filled in by renderTournamentBracket()
+         in app.js, polling the same getState backend as the Up Next tab. -->
+    <div id="tournamentBracket" hidden>
+      <div class="panel-copy">
+        <h2>Tournament Bracket <span class="live-dot" id="bracketLiveDot"></span></h2>
+        <p>Live — updates automatically as matches are reported. Head to the <strong>Up Next</strong> tab to see which courts are playing right now.</p>
+      </div>
+
+      <div id="bracketChampion" class="champion-box" hidden>
+        🏆 <strong><span id="bracketChampionName"></span></strong> is the tournament champion! Thanks for playing.
+      </div>
+
+      <div class="bracket-wrap">
+        <div id="bracketRounds" class="bracket-rounds"></div>
+      </div>
     </div>
   </section>
 
